@@ -172,7 +172,7 @@ static inline struct rtsx_dev *host_to_rtsx(struct Scsi_Host *host) {
 
 static inline void get_current_time(u8 *timeval_buf, int buf_len)
 {
-	struct timeval tv;
+	u64 ts_msec;
 	struct timespec64 ts;
 
 	if (!timeval_buf || (buf_len < 8)) {
@@ -180,18 +180,16 @@ static inline void get_current_time(u8 *timeval_buf, int buf_len)
 	}
 
 	ktime_get_real_ts64(&ts);
+	ts_msec = ts.tv_nsec/1000;
 
-	tv.tv_sec = ts.tv_sec;
-	tv.tv_usec = ts.tv_nsec/1000;
-
-	timeval_buf[0] = (u8)(tv.tv_sec >> 24);
-	timeval_buf[1] = (u8)(tv.tv_sec >> 16);
-	timeval_buf[2] = (u8)(tv.tv_sec >> 8);
-	timeval_buf[3] = (u8)(tv.tv_sec);
-	timeval_buf[4] = (u8)(tv.tv_usec >> 24);
-	timeval_buf[5] = (u8)(tv.tv_usec >> 16);
-	timeval_buf[6] = (u8)(tv.tv_usec >> 8);
-	timeval_buf[7] = (u8)(tv.tv_usec);
+	timeval_buf[0] = (u8)(ts.tv_sec >> 24);
+	timeval_buf[1] = (u8)(ts.tv_sec >> 16);
+	timeval_buf[2] = (u8)(ts.tv_sec >> 8);
+	timeval_buf[3] = (u8)(ts.tv_sec);
+	timeval_buf[4] = (u8)(ts_msec >> 24);
+	timeval_buf[5] = (u8)(ts_msec >> 16);
+	timeval_buf[6] = (u8)(ts_msec >> 8);
+	timeval_buf[7] = (u8)(ts_msec);
 }
 
 /* The scsi_lock() and scsi_unlock() macros protect the sm_state and the
